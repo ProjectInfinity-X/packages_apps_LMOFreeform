@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Oldalsáv</string>
+    <!--SettingsFragment-->
+    <string name="enable_sideline">Oldalsáv használata</string>
+    <string name="sidebar_label">Oldalsáv</string>
+    <string name="sidebar_summary">Alkalmazások gyors megnyitása lebegő ablakban</string>
+    <string name="sidebar_app_setting_label">Rögzített alkalmazások</string>
+    <string name="sidebar_settings_description">Oldalsáv beállításainak megnyitása</string>
+    <string name="sidebar_predicted_apps">Alkalmazásjavaslatok megjelenítése</string>
+    <string name="sidebar_predicted_apps_summary">Legfeljebb 6 javasolt alkalmazás megjelenítése a rögzített alkalmazások alatt</string>
+    <string name="sidebar_auto_enable_selected_apps">Oldalsáv automatikus engedélyezése a kiválasztott alkalmazásokhoz</string>
+    <string name="sidebar_auto_enable_selected_apps_summary">Oldalsáv automatikus megjelenítése a konfigurált alkalmazások indításakor</string>
+    <string name="sidebar_per_app_config">Alkalmazások konfigurálása</string>
+    <string name="sidebar_per_app_config_summary">Válassza ki azokat az alkalmazásokat, amelyeknek automatikusan engedélyezniük kell az oldalsávot</string>
+    <!-- Sidebar customization -->
+    <string name="sidebar_customization_title">Oldalsáv testreszabása</string>
+    <!-- Sections -->
+    <string name="sidebar_section_slider">Csúszka beállításai</string>
+    <string name="sidebar_section_layout">Elrendezési beállítások</string>
+    <string name="sidebar_section_visual">Vizuális effektek</string>
+    <!-- Slider settings -->
+    <string name="sidebar_transparency_value">Átláthatóság: %1$.2f</string>
+    <string name="sidebar_length_value">Csúszka hossza: %1$d képpont</string>
+    <string name="sidebar_position_label">Pozíció</string>
+    <string name="sidebar_left">Bal</string>
+    <string name="sidebar_right">Jobb</string>
+    <!-- Layout settings -->
+    <plurals name="sidebar_columns_value">
+        <item quantity="one">%1$d oszlop</item>
+        <item quantity="other">%1$d oszlopok</item>
+    </plurals>
+    <string name="sidebar_icon_size_value">Ikonméret: %1$d</string>
+    <string name="sidebar_icon_padding_value">Ikonkitöltés: %1$d</string>
+    <string name="sidebar_icon_padding_summary">Az ikonok körüli tér</string>
+    <string name="sidebar_column_spacing_value">Oszloptávolság: %1$d</string>
+    <string name="sidebar_column_spacing_summary">Oszlopok közötti térköz</string>
+    <string name="sidebar_corner_radius_value">Sarokrádiusz: %1$d</string>
+    <string name="sidebar_bg_transparency_value">Háttér átlátszósága: %1$.2f</string>
+    <string name="sidebar_reset_defaults">Alapértelmezett beállítások visszaállítása</string>
+    <!-- Visual effects -->
+    <string name="sidebar_drop_shadow_title">Vetőárnyék</string>
+    <string name="sidebar_drop_shadow_summary">Árnyékeffektus hozzáadása az oldalsávhoz</string>
+</resources>
