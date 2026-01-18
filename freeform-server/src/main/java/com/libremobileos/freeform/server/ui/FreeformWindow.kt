@@ -237,9 +237,15 @@ class FreeformWindow(
         measureSize()
         measureScale()
         context.display.getDisplayInfo(defaultDisplayInfo)
+        val maxRefreshRate = context.display.supportedModes
+            .maxOfOrNull { it.refreshRate } ?: defaultDisplayInfo.refreshRate
         freeformConfig.apply {
-            refreshRate = defaultDisplayInfo.refreshRate
-            presentationDeadlineNanos = defaultDisplayInfo.presentationDeadlineNanos
+            refreshRate = maxRefreshRate
+            presentationDeadlineNanos = if (maxRefreshRate > 0f) {
+                (1_000_000_000L / maxRefreshRate).toLong()
+            } else {
+                defaultDisplayInfo.presentationDeadlineNanos
+            }
             dlog(TAG, "populateFreeformConfig: $this")
         }
     }
@@ -330,6 +336,8 @@ class FreeformWindow(
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or
                     WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+            privateFlags = privateFlags or
+                    WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED
             format = PixelFormat.RGBA_8888
             windowAnimations = android.R.style.Animation_Dialog
         }
