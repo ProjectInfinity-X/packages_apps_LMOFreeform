@@ -14,6 +14,7 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import com.libremobileos.freeform.server.LMOFreeformServiceHolder
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -194,7 +195,7 @@ class PillGestureController(
         layout.pivotY = layout.height.toFloat()
         layout.scaleX = scale
         layout.scaleY = scale
-        layout.translationY = deltaY * 0.12f
+        layout.translationY = if (scale < 1f) deltaY * 0.12f else 0f
         layout.alpha = if (scale < 1f) scale.coerceIn(0f, 1f) else 1f
 
         val thresholdAction = when {
@@ -220,8 +221,8 @@ class PillGestureController(
         val baseWidth = baseWindowWidth.takeIf { it > 0 } ?: window.freeformLayout?.width ?: return
         val baseHeight = baseWindowHeight.takeIf { it > 0 } ?: window.freeformLayout?.height ?: return
         val expandedScale = max(scale, 1f)
-        window.windowParams.width = (baseWidth * expandedScale).roundToInt()
-        window.windowParams.height = (baseHeight * expandedScale).roundToInt()
+        window.windowParams.width = ceil(baseWidth * expandedScale).roundToInt()
+        window.windowParams.height = ceil(baseHeight * expandedScale).roundToInt()
         runCatching { window.windowManager.updateViewLayout(host, window.windowParams) }
     }
 
