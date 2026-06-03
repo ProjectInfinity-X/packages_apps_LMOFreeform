@@ -6,7 +6,7 @@ import android.animation.ValueAnimator
 
 object FreeformAnimation {
     fun moveInScreenAnimator(start: Int, end: Int, dur: Long, moveX: Boolean, window: FreeformWindow) {
-        val layout = window.freeformLayout ?: return
+        val layout = window.freeformWindowView ?: window.freeformLayout ?: return
         
         AnimatorSet().apply {
             play(
@@ -28,7 +28,7 @@ object FreeformAnimation {
     }
 
     fun toFullScreen(window: FreeformWindow, dur: Long, listener: Animator.AnimatorListener) {
-        val layout = window.freeformLayout ?: return
+        val layout = window.freeformWindowView ?: window.freeformLayout ?: return
         val rootView = window.freeformRootView ?: return
         
         AnimatorSet().apply {
