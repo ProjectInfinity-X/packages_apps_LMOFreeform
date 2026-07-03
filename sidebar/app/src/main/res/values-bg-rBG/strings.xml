@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Страничен панел</string>
+    <!--SettingsFragment-->
+    <string name="enable_sideline">Използвай \"Страничен панел\"</string>
+    <string name="sidebar_label">Страничен панел</string>
+    <string name="sidebar_summary">Бързо отваряне на приложения в летящ прозорец</string>
+    <string name="sidebar_app_setting_label">Закачени приложения</string>
+    <string name="sidebar_settings_description">Отвори настройки на страничният панел</string>
+    <string name="sidebar_predicted_apps">Покажи предложения за приложения</string>
+    <string name="sidebar_predicted_apps_summary">Покажи до 6 предложени приложения под закачените</string>
+    <string name="sidebar_auto_enable_selected_apps">Автоматично включи страничен панел за избрани приложения</string>
+    <string name="sidebar_auto_enable_selected_apps_summary">Автоматично покажи страничният панел когато конфигурирани приложения са пуснати</string>
+    <string name="sidebar_per_app_config">Конфигурирай приложения</string>
+    <string name="sidebar_per_app_config_summary">Избери приложения които би трябва автоматично да активират страничният панел</string>
+    <!-- Sidebar customization -->
+    <string name="sidebar_customization_title">Конфигуриране на страничен панел</string>
+    <!-- Sections -->
+    <string name="sidebar_section_slider">Настройки за плъзгач</string>
+    <string name="sidebar_section_layout">Настройки за оформление</string>
+    <string name="sidebar_section_visual">Визуални ефекти</string>
+    <string name="sidebar_section_miscellaneous">Допълнителни</string>
+    <!-- Slider settings -->
+    <string name="sidebar_transparency_value">Видимостта на плъзгача: %1$.2f</string>
+    <string name="sidebar_length_value">Дължина на плъзгача: %1$d</string>
+    <string name="sidebar_width_value">Широчина на плъзгача: %1$d</string>
+    <string name="sidebar_position_label">Местоположение на плъзгача</string>
+    <string name="sidebar_left">Отляво</string>
+    <string name="sidebar_right">Отдясно</string>
+    <!-- Layout settings -->
+    <plurals name="sidebar_columns_value">
+        <item quantity="one">%1$d Колона</item>
+        <item quantity="other">%1$d Колони</item>
+    </plurals>
+    <string name="sidebar_icon_size_value">Размер на иконите: %1$d dp</string>
+    <string name="sidebar_icon_padding_value">Запълване на иконите: %1$d dp</string>
+    <string name="sidebar_icon_padding_summary">Разстояние между всяка икона</string>
+    <string name="sidebar_column_spacing_value">Разстояние между колоните: %1$d dp</string>
+    <string name="sidebar_column_spacing_summary">Разстояние между колони</string>
+    <string name="sidebar_corner_radius_value">Окръжност на ъгъл: %1$d dp</string>
+    <string name="sidebar_bg_transparency_value">Прозрачност на фона: %1$.2f</string>
+    <string name="sidebar_reset_defaults">Завърни към по подразбиране</string>
+    <!-- Visual effects -->
+    <string name="sidebar_drop_shadow_title">Падаща сянка</string>
+    <string name="sidebar_drop_shadow_summary">Добави ефект на сянка до страничен панел</string>
+    <!-- Miscellaneous -->
+    <string name="sidebar_tap_to_open_title">Отвори шкафчето при натиск</string>
+    <string name="sidebar_tap_to_open_summary">Отвори шкафчето на страничния панел когато е натиснат плъзгача</string>
+    <string name="sidebar_swipe_to_open_title">Отвори шкафчето при плъзгане</string>
+    <string name="sidebar_swipe_to_open_summary">Отвори страничния панел когато плъзгачът е плъзнат хоризонтално</string>
+    <string name="sidebar_hide_on_gamespace_title">Скрий когато GameSpace е активно</string>
+    <string name="sidebar_hide_on_gamespace_summary">Автоматично скрий страничния панел, докато игра се произвежда с GameSpace</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Postranní panel</string>
+    <!--SettingsFragment-->
+    <string name="enable_sideline">Použít postranní panel</string>
+    <string name="sidebar_label">Postranní panel</string>
+    <string name="sidebar_summary">Rychle otevřete aplikace z plovoucího okna</string>
+    <string name="sidebar_app_setting_label">Připnuté aplikace</string>
+    <string name="sidebar_settings_description">Otevřít nastavení postranního panelu</string>
+    <string name="sidebar_predicted_apps">Zobrazovat návrhy aplikací</string>
+    <string name="sidebar_predicted_apps_summary">Zobrazit nejvýše 6 navrhovaných aplikací pod připnutými aplikacemi</string>
+    <string name="sidebar_auto_enable_selected_apps">Automaticky povolit postranní panel pro vybrané aplikace</string>
+    <string name="sidebar_auto_enable_selected_apps_summary">Automaticky zobrazit postranní panel, když jsou spuštěny konfigurované aplikace</string>
+    <string name="sidebar_per_app_config">Konfigurace aplikací</string>
+    <string name="sidebar_per_app_config_summary">Vyberte aplikace, které by měly automaticky povolit postranní panel</string>
+    <!-- Sidebar customization -->
+    <string name="sidebar_customization_title">Přizpůsobení postranního panelu</string>
+    <!-- Sections -->
+    <string name="sidebar_section_slider">Nastavení posuvníku</string>
+    <string name="sidebar_section_layout">Nastavení rozvržení</string>
+    <string name="sidebar_section_visual">Vizuální efekty</string>
+    <string name="sidebar_section_miscellaneous">Miscellaneous</string>
+    <!-- Slider settings -->
+    <string name="sidebar_transparency_value">Slider transparency: %1$.2f</string>
+    <string name="sidebar_length_value">Slider length: %1$d</string>
+    <string name="sidebar_width_value">Slider width: %1$d</string>
+    <string name="sidebar_position_label">Slider position</string>
+    <string name="sidebar_left">Vlevo</string>
+    <string name="sidebar_right">Vpravo</string>
+    <!-- Layout settings -->
+    <plurals name="sidebar_columns_value">
+        <item quantity="one">%1$d sloupec</item>
+        <item quantity="few">%1$d columns</item>
+        <item quantity="many">%1$d columns</item>
+        <item quantity="other">%1$d columns</item>
+    </plurals>
+    <string name="sidebar_icon_size_value">Velikost ikony: %1$d dp</string>
+    <string name="sidebar_icon_padding_value">Vyplnění ikony: %1$d dp</string>
+    <string name="sidebar_icon_padding_summary">Prostor kolem každé ikony</string>
+    <string name="sidebar_column_spacing_value">Mezera sloupců: %1$d dp</string>
+    <string name="sidebar_column_spacing_summary">Prostor mezi sloupci</string>
+    <string name="sidebar_corner_radius_value">Poloměr rohu: %1$d dp</string>
+    <string name="sidebar_bg_transparency_value">Průhlednost pozadí: %1$.2f</string>
+    <string name="sidebar_reset_defaults">Obnovit výchozí</string>
+    <!-- Visual effects -->
+    <string name="sidebar_drop_shadow_title">Povolit stíny</string>
+    <string name="sidebar_drop_shadow_summary">Přidat stínový efekt do postranního panelu</string>
+    <!-- Miscellaneous -->
+    <string name="sidebar_tap_to_open_title">Open drawer on tap</string>
+    <string name="sidebar_tap_to_open_summary">Open the sidebar drawer when the slider is tapped</string>
+    <string name="sidebar_swipe_to_open_title">Open drawer on swipe</string>
+    <string name="sidebar_swipe_to_open_summary">Open the sidebar drawer when the slider is swiped horizontally</string>
+    <string name="sidebar_hide_on_gamespace_title">Hide when GameSpace is active</string>
+    <string name="sidebar_hide_on_gamespace_summary">Automatically hide the sidebar slider when a game is running with GameSpace</string>
+</resources>
