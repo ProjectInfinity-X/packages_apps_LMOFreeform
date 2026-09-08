@@ -21,6 +21,7 @@ import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.PathInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
@@ -33,6 +34,7 @@ import com.libremobileos.freeform.server.SystemServiceHolder
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sign
 
 class FreeformWindow(
     val handler: Handler,
@@ -103,6 +105,11 @@ class FreeformWindow(
         private const val DRAWABLE_OPEN_FULL_SCREEN = "ic_maximize"
         const val TITLE_CLOSE = "Close"
         const val TITLE_OPEN_FULL_SCREEN = "Open full screen"
+        private val M3_DECELERATE = PathInterpolator(0.05f, 0.7f, 0.1f, 1.0f)
+        private val M3_ACCELERATE = PathInterpolator(0.3f, 0.0f, 0.8f, 0.15f)
+        private const val M3_DURATION_EXIT = 60L
+        private const val M3_DURATION_ENTER = 110L
+        private const val SHIFT_DP = 4f
     }
 
     init {
@@ -482,33 +489,99 @@ class FreeformWindow(
     val openFullScreenIcon: Drawable?
         get() = resourceHolder.getDrawable(DRAWABLE_OPEN_FULL_SCREEN)
 
-    fun updateTitle(title: CharSequence?, icon: Drawable? = null) {
+    fun updateTitle(
+        title: CharSequence?,
+        icon: Drawable? = null,
+        directionY: Float = 0f,
+        animated: Boolean = true
+    ) {
         val text = title ?: return
-        if (handler.looper.isCurrentThread) {
-            packageNameView?.text = text
-            icon?.let { appIconView?.setImageDrawable(it) }
-        } else {
-            handler.post {
-                packageNameView?.text = text
-                icon?.let { appIconView?.setImageDrawable(it) }
-            }
+        if (!handler.looper.isCurrentThread) {
+            handler.post { updateTitle(text, icon, directionY, animated) }
+            return
         }
+
+        val nameView = packageNameView ?: return
+        val iconView = appIconView
+
+        if (nameView.text == text) {
+            if (nameView.alpha == 1f && nameView.translationY == 0f) return
+            nameView.animate().cancel()
+            iconView?.animate()?.cancel()
+            nameView.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(M3_DURATION_ENTER)
+                .setInterpolator(M3_DECELERATE)
+                .start()
+            iconView?.animate()
+                ?.alpha(1f)
+                ?.translationY(0f)
+                ?.setDuration(M3_DURATION_ENTER)
+                ?.setInterpolator(M3_DECELERATE)
+                ?.start()
+            return
+        }
+
+        if (!animated) {
+            nameView.animate().cancel()
+            iconView?.animate()?.cancel()
+            nameView.text = text
+            nameView.alpha = 1f
+            nameView.translationY = 0f
+            icon?.let { iconView?.setImageDrawable(it) }
+            iconView?.alpha = 1f
+            iconView?.translationY = 0f
+            return
+        }
+
+        val shiftPx = SHIFT_DP * context.resources.displayMetrics.density * (if (directionY != 0f) sign(directionY) else -1f)
+
+        nameView.animate().cancel()
+        iconView?.animate()?.cancel()
+
+        iconView?.animate()
+            ?.alpha(0f)
+            ?.translationY(shiftPx)
+            ?.setDuration(M3_DURATION_EXIT)
+            ?.setInterpolator(M3_ACCELERATE)
+            ?.start()
+
+        nameView.animate()
+            .alpha(0f)
+            .translationY(shiftPx)
+            .setDuration(M3_DURATION_EXIT)
+            .setInterpolator(M3_ACCELERATE)
+            .withEndAction {
+                nameView.text = text
+                nameView.translationY = -shiftPx
+                nameView.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(M3_DURATION_ENTER)
+                    .setInterpolator(M3_DECELERATE)
+                    .start()
+
+                iconView?.let { iv ->
+                    icon?.let { iv.setImageDrawable(it) }
+                    iv.translationY = -shiftPx
+                    iv.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(M3_DURATION_ENTER)
+                        .setInterpolator(M3_DECELERATE)
+                        .start()
+                }
+            }
+            .start()
     }
 
-    fun resetTitle() {
-        if (handler.looper.isCurrentThread) {
-            packageNameView?.text = appPackageName
-            appIconView?.setImageDrawable(appIcon)
-        } else {
-            handler.post {
-                packageNameView?.text = appPackageName
-                appIconView?.setImageDrawable(appIcon)
-            }
-        }
+    fun resetTitle(directionY: Float = 0f, animated: Boolean = true) {
+        updateTitle(appPackageName, appIcon, directionY, animated)
     }
 
     fun enterFullscreen() {
-        updateTitle(TITLE_OPEN_FULL_SCREEN, openFullScreenIcon)
+        updateTitle(TITLE_OPEN_FULL_SCREEN, openFullScreenIcon, directionY = 1f)
         val listener = freeformTaskStackListener
         if (listener == null || listener.taskId == -1) {
             Slog.e(TAG, "taskId is -1, can`t move")
@@ -523,7 +596,7 @@ class FreeformWindow(
 
     fun close() {
         dlog(TAG, "close()")
-        updateTitle(TITLE_CLOSE, closeIcon)
+        updateTitle(TITLE_CLOSE, closeIcon, directionY = -1f)
         runCatching {
             SystemServiceHolder.activityTaskManager.removeTask(freeformTaskStackListener!!.taskId)
             removeView()
@@ -585,6 +658,12 @@ class FreeformWindow(
             }
         }
         
+        packageNameView?.animate()?.cancel()
+        packageNameView?.alpha = 1f
+        packageNameView?.translationY = 0f
+        appIconView?.animate()?.cancel()
+        appIconView?.alpha = 1f
+        appIconView?.translationY = 0f
         packageNameView = null
         appIconView = null
         isInitialized = false

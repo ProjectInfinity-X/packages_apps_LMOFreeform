@@ -134,7 +134,7 @@ class PillGestureController(
                 startX = event.rawX
                 startY = event.rawY
                 activeAction = null
-                window.resetTitle()
+                window.resetTitle(animated = false)
                 captureBaseWindowSize()
                 window.freeformLayout?.animate()?.cancel()
                 velocityTracker = VelocityTracker.obtain().also { it.addMovement(event) }
@@ -210,9 +210,12 @@ class PillGestureController(
                 pillView.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
             when (thresholdAction) {
-                PillAction.CloseWindow -> window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon)
-                PillAction.EnterFullscreen -> window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon)
-                else -> window.resetTitle()
+                PillAction.CloseWindow -> window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon, directionY = -1f)
+                PillAction.EnterFullscreen -> window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon, directionY = 1f)
+                else -> {
+                    val returnDirection = if (activeAction == PillAction.CloseWindow) 1f else -1f
+                    window.resetTitle(directionY = returnDirection)
+                }
             }
             activeAction = thresholdAction
         }
@@ -245,11 +248,11 @@ class PillGestureController(
         activeAction = null
         when (action) {
             PillAction.CloseWindow -> {
-                window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon)
+                window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon, directionY = -1f)
                 animateCloseThenRun { window.close() }
             }
             PillAction.EnterFullscreen -> {
-                window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon)
+                window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon, directionY = 1f)
                 animateFullscreenThenRun { window.enterFullscreen() }
             }
             PillAction.Back -> {
@@ -293,8 +296,10 @@ class PillGestureController(
 
     private fun animateBackToIdle() {
         val layout = window.freeformLayout ?: return
+        val wasAction = activeAction
         activeAction = null
-        window.resetTitle()
+        val returnDirection = if (wasAction == PillAction.CloseWindow) 1f else -1f
+        window.resetTitle(directionY = returnDirection)
         layout.animate()
             .translationY(0f)
             .alpha(1f)
