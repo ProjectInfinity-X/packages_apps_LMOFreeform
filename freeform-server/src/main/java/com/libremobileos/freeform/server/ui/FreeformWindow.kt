@@ -53,6 +53,8 @@ class FreeformWindow(
     var freeformView: TextureView? = null
     private var topBarView: View? = null
     private var bottomBarView: View? = null
+    private var appIconView: ImageView? = null
+    private var packageNameView: TextView? = null
     var veilView: ViewGroup? = null
     private var displayId = Display.INVALID_DISPLAY
     var defaultDisplayWidth = context.resources.displayMetrics.widthPixels
@@ -97,6 +99,10 @@ class FreeformWindow(
         private const val FREEFORM_PACKAGE = "com.libremobileos.freeform"
         private const val FREEFORM_LAYOUT = "view_freeform"
         private const val WINDOW_DESTROY_WAIT_MS = 10000L
+        private const val DRAWABLE_CLOSE = "ic_minimize"
+        private const val DRAWABLE_OPEN_FULL_SCREEN = "ic_maximize"
+        const val TITLE_CLOSE = "Close"
+        const val TITLE_OPEN_FULL_SCREEN = "Open full screen"
     }
 
     init {
@@ -316,6 +322,8 @@ class FreeformWindow(
             destroy("addFreeformView:freeform chrome view is null")
             return false
         }
+        this.appIconView = appIconView
+        this.packageNameView = packageNameView
         veilAppIconView.setImageDrawable(appIcon)
         appIconView.setImageDrawable(appIcon)
         packageNameView.text = appPackageName
@@ -468,7 +476,39 @@ class FreeformWindow(
         LMOFreeformServiceHolder.back(displayId)
     }
 
+    val closeIcon: Drawable?
+        get() = resourceHolder.getDrawable(DRAWABLE_CLOSE)
+
+    val openFullScreenIcon: Drawable?
+        get() = resourceHolder.getDrawable(DRAWABLE_OPEN_FULL_SCREEN)
+
+    fun updateTitle(title: CharSequence?, icon: Drawable? = null) {
+        val text = title ?: return
+        if (handler.looper.isCurrentThread) {
+            packageNameView?.text = text
+            icon?.let { appIconView?.setImageDrawable(it) }
+        } else {
+            handler.post {
+                packageNameView?.text = text
+                icon?.let { appIconView?.setImageDrawable(it) }
+            }
+        }
+    }
+
+    fun resetTitle() {
+        if (handler.looper.isCurrentThread) {
+            packageNameView?.text = appPackageName
+            appIconView?.setImageDrawable(appIcon)
+        } else {
+            handler.post {
+                packageNameView?.text = appPackageName
+                appIconView?.setImageDrawable(appIcon)
+            }
+        }
+    }
+
     fun enterFullscreen() {
+        updateTitle(TITLE_OPEN_FULL_SCREEN, openFullScreenIcon)
         val listener = freeformTaskStackListener
         if (listener == null || listener.taskId == -1) {
             Slog.e(TAG, "taskId is -1, can`t move")
@@ -483,6 +523,7 @@ class FreeformWindow(
 
     fun close() {
         dlog(TAG, "close()")
+        updateTitle(TITLE_CLOSE, closeIcon)
         runCatching {
             SystemServiceHolder.activityTaskManager.removeTask(freeformTaskStackListener!!.taskId)
             removeView()
@@ -544,6 +585,8 @@ class FreeformWindow(
             }
         }
         
+        packageNameView = null
+        appIconView = null
         isInitialized = false
     }
     

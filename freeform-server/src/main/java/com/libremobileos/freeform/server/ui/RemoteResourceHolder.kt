@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Context.CONTEXT_IGNORE_SECURITY
 import android.content.Context.CONTEXT_INCLUDE_CODE
+import android.graphics.drawable.Drawable
 import android.util.Slog
 import android.view.LayoutInflater
 import android.view.View
@@ -49,6 +50,17 @@ class RemoteResourceHolder(context: Context, private val resPkg: String) {
         } catch (e: Exception) {
             e.printStackTrace()
             Slog.e(TAG, "getLayoutChildViewByTag", e)
+            null
+        }
+    }
+
+    fun getDrawable(drawableName: String): Drawable? {
+        return try {
+            val drawableId = remoteContext.resources.getIdentifier(drawableName, "drawable", resPkg)
+            if (drawableId != 0) remoteContext.getDrawable(drawableId) else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Slog.e(TAG, "getDrawable", e)
             null
         }
     }
