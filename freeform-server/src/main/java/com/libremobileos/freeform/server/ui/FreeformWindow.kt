@@ -103,8 +103,10 @@ class FreeformWindow(
         private const val WINDOW_DESTROY_WAIT_MS = 10000L
         private const val DRAWABLE_CLOSE = "ic_minimize"
         private const val DRAWABLE_OPEN_FULL_SCREEN = "ic_maximize"
+        private const val DRAWABLE_PIN = "ic_pin"
         const val TITLE_CLOSE = "Close"
         const val TITLE_OPEN_FULL_SCREEN = "Open full screen"
+        const val TITLE_PIN = "Pin app"
         private val M3_DECELERATE = PathInterpolator(0.05f, 0.7f, 0.1f, 1.0f)
         private val M3_ACCELERATE = PathInterpolator(0.3f, 0.0f, 0.8f, 0.15f)
         private const val M3_DURATION_EXIT = 60L
@@ -334,7 +336,7 @@ class FreeformWindow(
         veilAppIconView.setImageDrawable(appIcon)
         appIconView.setImageDrawable(appIcon)
         packageNameView.text = appPackageName
-        pinView.setOnClickListener(PinClickListener(this))
+        pinView.visibility = View.GONE
         leftScaleView.setOnTouchListener(ScaleTouchListener(this, false))
         rightScaleView.setOnTouchListener(ScaleTouchListener(this))
         gesturePillTouchView.setOnTouchListener(PillGestureController(this, gesturePillView, gesturePillPlateView))
@@ -488,6 +490,9 @@ class FreeformWindow(
 
     val openFullScreenIcon: Drawable?
         get() = resourceHolder.getDrawable(DRAWABLE_OPEN_FULL_SCREEN)
+
+    val pinIcon: Drawable?
+        get() = resourceHolder.getDrawable(DRAWABLE_PIN)
 
     fun updateTitle(
         title: CharSequence?,
