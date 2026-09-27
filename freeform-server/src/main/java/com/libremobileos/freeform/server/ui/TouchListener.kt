@@ -134,6 +134,7 @@ class PillGestureController(
                 startX = event.rawX
                 startY = event.rawY
                 activeAction = null
+                window.resetTitle(animated = false)
                 captureBaseWindowSize()
                 window.freeformLayout?.animate()?.cancel()
                 velocityTracker = VelocityTracker.obtain().also { it.addMovement(event) }
@@ -204,10 +205,20 @@ class PillGestureController(
             deltaY > swipeThreshold -> PillAction.EnterFullscreen
             else -> null
         }
-        if (thresholdAction != null && thresholdAction != activeAction) {
-            pillView.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        if (thresholdAction != activeAction) {
+            if (thresholdAction != null) {
+                pillView.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+            }
+            when (thresholdAction) {
+                PillAction.CloseWindow -> window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon, directionY = -1f)
+                PillAction.EnterFullscreen -> window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon, directionY = 1f)
+                else -> {
+                    val returnDirection = if (activeAction == PillAction.CloseWindow) 1f else -1f
+                    window.resetTitle(directionY = returnDirection)
+                }
+            }
+            activeAction = thresholdAction
         }
-        activeAction = thresholdAction
     }
 
     private fun captureBaseWindowSize() {
@@ -236,8 +247,14 @@ class PillGestureController(
     private fun dispatch(action: PillAction) {
         activeAction = null
         when (action) {
-            PillAction.CloseWindow -> animateCloseThenRun { window.close() }
-            PillAction.EnterFullscreen -> animateFullscreenThenRun { window.enterFullscreen() }
+            PillAction.CloseWindow -> {
+                window.updateTitle(FreeformWindow.TITLE_CLOSE, window.closeIcon, directionY = -1f)
+                animateCloseThenRun { window.close() }
+            }
+            PillAction.EnterFullscreen -> {
+                window.updateTitle(FreeformWindow.TITLE_OPEN_FULL_SCREEN, window.openFullScreenIcon, directionY = 1f)
+                animateFullscreenThenRun { window.enterFullscreen() }
+            }
             PillAction.Back -> {
                 animateBackToIdle()
                 window.goBack()
@@ -279,7 +296,10 @@ class PillGestureController(
 
     private fun animateBackToIdle() {
         val layout = window.freeformLayout ?: return
+        val wasAction = activeAction
         activeAction = null
+        val returnDirection = if (wasAction == PillAction.CloseWindow) 1f else -1f
+        window.resetTitle(directionY = returnDirection)
         layout.animate()
             .translationY(0f)
             .alpha(1f)
@@ -353,34 +373,85 @@ class RightViewClickListener(private val displayId: Int) : View.OnClickListener 
 class ScaleTouchListener(private val window: FreeformWindow, private val isRight: Boolean = true): View.OnTouchListener {
     private var startX = 0.0f
     private var startY = 0.0f
+    private var isPinTriggered = false
+
+    companion object {
+        private const val PIN_THRESHOLD_DP = 160
+        private const val MIN_WINDOW_SIZE_DP = 110
+    }
+
+    private fun dp(value: Int): Int =
+        (value * window.context.resources.displayMetrics.density).roundToInt()
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View, event: MotionEvent): Boolean {
         val rootView = window.freeformRootView ?: return true
         val veilView = window.veilView ?: return true
         val freeformView = window.freeformView ?: return true
         
-        when (event.action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 startX = event.rawX
                 startY = event.rawY
+                isPinTriggered = false
                 rootView.visibility = View.INVISIBLE
                 veilView.visibility = View.VISIBLE
             }
             MotionEvent.ACTION_MOVE -> {
+                val xDelta = if (isRight) (event.rawX - startX) else (startX - event.rawX)
+                val yDelta = event.rawY - startY
+
+                val currentWidth = if (rootView.layoutParams.width > 0) rootView.layoutParams.width else rootView.width
+                val currentHeight = if (rootView.layoutParams.height > 0) rootView.layoutParams.height else rootView.height
+
+                val pinThresholdWidth = max(dp(PIN_THRESHOLD_DP), window.freeformConfig.hangUpWidth)
+                val pinThresholdHeight = max(dp(PIN_THRESHOLD_DP), window.freeformConfig.hangUpHeight)
+                val minAllowedWidth = max(dp(MIN_WINDOW_SIZE_DP), (pinThresholdWidth * 0.75f).roundToInt())
+                val minAllowedHeight = max(dp(MIN_WINDOW_SIZE_DP), (pinThresholdHeight * 0.75f).roundToInt())
+
+                val effXDelta = if (currentWidth <= pinThresholdWidth && xDelta < 0) xDelta * 0.3f else xDelta
+                val effYDelta = if (currentHeight <= pinThresholdHeight && yDelta < 0) yDelta * 0.3f else yDelta
+
+                var targetWidth = (currentWidth + effXDelta).roundToInt()
+                var targetHeight = (currentHeight + effYDelta).roundToInt()
+
+                if (targetWidth > targetHeight) {
+                    if (xDelta < 0) targetWidth = targetHeight
+                    else targetHeight = targetWidth
+                }
+
+                targetWidth = max(minAllowedWidth, targetWidth)
+                targetHeight = max(minAllowedHeight, targetHeight)
+
                 rootView.layoutParams = rootView.layoutParams.apply {
-                    val xDelta = if (isRight) (event.rawX - startX) else (startX - event.rawX)
-                    val yDelta = event.rawY - startY
-                    width = max(25, (rootView.width + xDelta).roundToInt())
-                    height = max(25, (rootView.height + yDelta).roundToInt())
-                    if (width > height) {
-                        if (xDelta < 0) width = height
-                        else height = width
+                    width = targetWidth
+                    height = targetHeight
+                }
+
+                val shouldTriggerPin = targetWidth <= pinThresholdWidth || targetHeight <= pinThresholdHeight
+                if (shouldTriggerPin != isPinTriggered) {
+                    isPinTriggered = shouldTriggerPin
+                    v.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    if (isPinTriggered) {
+                        window.updateTitle(FreeformWindow.TITLE_PIN, window.pinIcon, directionY = -1f)
+                    } else {
+                        window.resetTitle(directionY = 1f)
                     }
                 }
+
                 startX = event.rawX
                 startY = event.rawY
             }
             MotionEvent.ACTION_UP -> {
+                if (isPinTriggered) {
+                    isPinTriggered = false
+                    window.resetTitle(animated = false)
+                    rootView.visibility = View.VISIBLE
+                    veilView.visibility = View.GONE
+                    window.handler.post { window.handleHangUp() }
+                    return true
+                }
+
                 freeformView.surfaceTexture?.let { surfaceTexture ->
                     window.freeformConfig.width = rootView.layoutParams.width
                     window.freeformConfig.height = rootView.layoutParams.height
@@ -399,6 +470,18 @@ class ScaleTouchListener(private val window: FreeformWindow, private val isRight
                         veilView.visibility = View.GONE
                     }, 250)
                 }
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                if (isPinTriggered) {
+                    isPinTriggered = false
+                    window.resetTitle(animated = false)
+                }
+                rootView.layoutParams = rootView.layoutParams.apply {
+                    width = window.freeformConfig.width
+                    height = window.freeformConfig.height
+                }
+                rootView.visibility = View.VISIBLE
+                veilView.visibility = View.GONE
             }
         }
         return true
