@@ -3,91 +3,67 @@ package com.libremobileos.freeform.server.ui
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
+import android.view.animation.PathInterpolator
 
 object FreeformAnimation {
-    fun moveInScreenAnimator(start: Int, end: Int, dur: Long, moveX: Boolean, window: FreeformWindow) {
+    // M3 Expressive default spatial spring curve (damping 0.8, stiffness 380, overshoot y1 = 1.21)
+    private val SPATIAL_INTERPOLATOR = PathInterpolator(0.38f, 1.21f, 0.22f, 1.00f)
+
+    fun moveInScreenAnimator(start: Int, end: Int, dur: Long = 350L, moveX: Boolean, window: FreeformWindow) {
         val layout = window.freeformWindowView ?: window.freeformLayout ?: return
-        
-        AnimatorSet().apply {
-            play(
-                ValueAnimator.ofInt(start, end).apply {
-                    addUpdateListener {
-                        window.windowManager.updateViewLayout(
-                            layout,
-                            window.windowParams.apply {
-                                if (moveX) x = it.animatedValue as Int
-                                else y = it.animatedValue as Int
-                            }
-                        )
-                    }
-                }
-            )
+
+        ValueAnimator.ofInt(start, end).apply {
             duration = dur
+            interpolator = SPATIAL_INTERPOLATOR
+            addUpdateListener {
+                window.windowManager.updateViewLayout(
+                    layout,
+                    window.windowParams.apply {
+                        if (moveX) x = it.animatedValue as Int
+                        else y = it.animatedValue as Int
+                    }
+                )
+            }
             start()
         }
     }
 
-    fun toFullScreen(window: FreeformWindow, dur: Long, listener: Animator.AnimatorListener) {
+    fun toFullScreen(window: FreeformWindow, dur: Long = 350L, listener: Animator.AnimatorListener) {
         val layout = window.freeformWindowView ?: window.freeformLayout ?: return
         val rootView = window.freeformRootView ?: return
-        
-        AnimatorSet().apply {
-            play(
-                ValueAnimator.ofInt(window.windowParams.x, 0).apply {
-                    addUpdateListener {
-                        window.windowManager.updateViewLayout(
-                            layout,
-                            window.windowParams.apply {
-                                x = it.animatedValue as Int
-                            }
-                        )
-                    }
+
+        val animX = ValueAnimator.ofInt(window.windowParams.x, 0).apply {
+            addUpdateListener {
+                window.windowParams.x = it.animatedValue as Int
+            }
+        }
+        val animY = ValueAnimator.ofInt(window.windowParams.y, 0).apply {
+            addUpdateListener {
+                window.windowParams.y = it.animatedValue as Int
+            }
+        }
+        val animW = ValueAnimator.ofInt(window.freeformConfig.width, window.defaultDisplayWidth).apply {
+            addUpdateListener {
+                rootView.layoutParams = rootView.layoutParams.apply {
+                    width = it.animatedValue as Int
                 }
-            )
+            }
+        }
+        val animH = ValueAnimator.ofInt(window.freeformConfig.height, window.defaultDisplayHeight).apply {
+            addUpdateListener {
+                rootView.layoutParams = rootView.layoutParams.apply {
+                    height = it.animatedValue as Int
+                }
+                window.windowManager.updateViewLayout(layout, window.windowParams)
+            }
+        }
+
+        AnimatorSet().apply {
+            playTogether(animX, animY, animW, animH)
+            interpolator = SPATIAL_INTERPOLATOR
             duration = dur
+            addListener(listener)
             start()
         }
-        AnimatorSet().apply {
-            play(
-                ValueAnimator.ofInt(window.windowParams.y, 0).apply {
-                    addUpdateListener {
-                        window.windowManager.updateViewLayout(
-                            layout,
-                            window.windowParams.apply {
-                                y = it.animatedValue as Int
-                            }
-                        )
-                    }
-                }
-            )
-            duration = dur
-            start()
-        }
-        AnimatorSet().apply {
-            play(
-                ValueAnimator.ofInt(window.freeformConfig.width, window.defaultDisplayWidth).apply {
-                    addUpdateListener {
-                        rootView.layoutParams = rootView.layoutParams.apply {
-                            width = it.animatedValue as Int
-                        }
-                    }
-                }
-            )
-            duration = dur
-            start()
-        }
-        AnimatorSet().apply {
-            play(
-                ValueAnimator.ofInt(window.freeformConfig.height, window.defaultDisplayHeight).apply {
-                    addUpdateListener {
-                        rootView.layoutParams = rootView.layoutParams.apply {
-                            height = it.animatedValue as Int
-                        }
-                    }
-                }
-            )
-            duration = dur
-            start()
-        }.addListener(listener)
     }
 }
