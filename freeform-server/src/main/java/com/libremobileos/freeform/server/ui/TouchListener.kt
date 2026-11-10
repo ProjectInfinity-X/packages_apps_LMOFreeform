@@ -507,10 +507,6 @@ class ScaleTouchListener(private val window: FreeformWindow, private val isRight
                 var targetWidth = (initialWidth + effXDelta).roundToInt().coerceIn(minAllowedWidth, maxAllowedWidth)
                 var targetHeight = (initialHeight + effYDelta).roundToInt().coerceIn(minAllowedHeight, maxAllowedHeight)
 
-                if (targetWidth > targetHeight && xDelta < 0) {
-                    targetWidth = targetHeight
-                }
-
                 rootView.layoutParams = rootView.layoutParams.apply {
                     width = targetWidth
                     height = targetHeight
@@ -518,14 +514,14 @@ class ScaleTouchListener(private val window: FreeformWindow, private val isRight
 
                 val deltaW = targetWidth - initialWidth
                 val deltaH = targetHeight - initialHeight
-                val shiftX = if (isRight) (deltaW / 2) else -(deltaW / 2)
-                val shiftY = deltaH / 2
+                val shiftX = if (isRight) ((deltaW / 2.0f).roundToInt()) else -((deltaW / 2.0f).roundToInt())
+                val shiftY = (deltaH / 2.0f).roundToInt()
 
                 window.windowParams.x = initialWindowX + shiftX
                 window.windowParams.y = initialWindowY + shiftY
                 window.windowManager.updateViewLayout(layout, window.windowParams)
 
-                val shouldTriggerPin = targetWidth <= pinThresholdWidth || targetHeight <= pinThresholdHeight
+                val shouldTriggerPin = targetWidth <= pinThresholdWidth && targetHeight <= pinThresholdHeight
                 if (shouldTriggerPin != isPinTriggered) {
                     isPinTriggered = shouldTriggerPin
                     v.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)
