@@ -446,13 +446,16 @@ class FreeformWindow(
         topBar.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
 
         if (freeformConfig.isHangUp) {
+            FreeformAnimation.cancelMoveAnimators()
             val pad = (context.resources.displayMetrics.density * 16).roundToInt()
             freeformWindowView?.setPadding(pad, pad, pad, pad)
             windowParams.apply {
-                x = freeformConfig.notInHangUpX
-                y = freeformConfig.notInHangUpY
+                x = 0
+                y = 0
                 flags = flags or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
             }
+            freeformConfig.notInHangUpX = 0
+            freeformConfig.notInHangUpY = 0
             rootView.layoutParams.apply {
                 width = freeformConfig.width
                 height = freeformConfig.height
@@ -462,8 +465,21 @@ class FreeformWindow(
             bottomBar.visibility = View.VISIBLE
             freeformConfig.isHangUp = false
             view.setOnTouchListener(this)
-            makeSureFreeformInScreen()
+            layout.animate().cancel()
+            layout.translationX = 0f
+            layout.translationY = 0f
+            layout.alpha = 0f
+            layout.scaleX = 0.95f
+            layout.scaleY = 0.95f
+            layout.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(M3E_DURATION_ENTER)
+                .setInterpolator(EXPRESSIVE_EFFECTS_INTERPOLATOR)
+                .start()
         } else {
+            FreeformAnimation.cancelMoveAnimators()
             freeformConfig.notInHangUpX = windowParams.x
             freeformConfig.notInHangUpY = windowParams.y
             toHangUp()
@@ -473,7 +489,10 @@ class FreeformWindow(
             val gestureDetector = GestureDetector(context, hangUpGestureListener)
             view.setOnTouchListener { _, event ->
                 gestureDetector.onTouchEvent(event)
-                if (event.action == MotionEvent.ACTION_UP) makeSureFreeformInScreen()
+                if (event.action == MotionEvent.ACTION_UP && hangUpGestureListener.isDragging) {
+                    hangUpGestureListener.isDragging = false
+                    makeSureFreeformInScreen()
+                }
                 true
             }
         }
@@ -485,11 +504,13 @@ class FreeformWindow(
     fun toHangUp() {
         val rootView = freeformRootView ?: return
         val layout = freeformWindowView ?: freeformLayout ?: return
+        val density = context.resources.displayMetrics.density
+        val safeTopMargin = (28 * density).roundToInt()
 
         freeformWindowView?.setPadding(0, 0, 0, 0)
         windowParams.apply {
             x = (defaultDisplayWidth / 2 - freeformConfig.hangUpWidth / 2)
-            y = -(defaultDisplayHeight / 2 - freeformConfig.hangUpHeight / 2)
+            y = -(defaultDisplayHeight / 2 - freeformConfig.hangUpHeight / 2) + safeTopMargin
             flags = flags xor WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
         }
         rootView.layoutParams = rootView.layoutParams.apply {
@@ -800,6 +821,8 @@ class FreeformWindow(
         appIconView?.animate()?.cancel()
         appIconView?.alpha = 1f
         appIconView?.translationY = 0f
+        (freeformWindowView ?: freeformLayout)?.animate()?.cancel()
+        FreeformAnimation.cancelMoveAnimators()
         packageNameView = null
         appIconView = null
         isInitialized = false
@@ -829,7 +852,7 @@ class FreeformWindow(
                 y = 0
             } else {
                 x = 0
-                y = -(defaultDisplayHeight / 8)
+                y = 0
             }
         }
 

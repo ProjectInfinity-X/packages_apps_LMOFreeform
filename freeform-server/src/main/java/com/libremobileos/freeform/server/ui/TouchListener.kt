@@ -592,13 +592,17 @@ class ScaleTouchListener(private val window: FreeformWindow, private val isRight
 class HangUpGestureListener(private val window: FreeformWindow) : SimpleOnGestureListener() {
     private var startX = 0
     private var startY = 0
+    var isDragging = false
+
     override fun onDown(e: MotionEvent): Boolean {
         startX = window.windowParams.x
         startY = window.windowParams.y
+        isDragging = false
         return super.onDown(e)
     }
 
     override fun onSingleTapUp(e: MotionEvent): Boolean {
+        isDragging = false
         window.handler.post { window.handleHangUp() }
         return true
     }
@@ -609,6 +613,7 @@ class HangUpGestureListener(private val window: FreeformWindow) : SimpleOnGestur
         distanceX: Float,
         distanceY: Float
     ): Boolean {
+        isDragging = true
         if (!isValidMotionEvent(e1) || !isValidMotionEvent(e2)) {
             return true
         }
