@@ -64,4 +64,15 @@ class RemoteResourceHolder(context: Context, private val resPkg: String) {
             null
         }
     }
+
+    fun getColor(colorName: String): Int {
+        return try {
+            val colorId = remoteContext.resources.getIdentifier(colorName, "color", resPkg)
+            if (colorId != 0) remoteContext.getColor(colorId) else 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Slog.e(TAG, "getColor", e)
+            0
+        }
+    }
 }

@@ -124,7 +124,10 @@ class FreeformTaskStackListener(
                     window.freeformConfig.hangUpHeight = minHangUp
                 }
             }
-            window.handler.post { window.changeOrientation() }
+            window.handler.post {
+                window.changeOrientation()
+                window.makeSureFreeformInScreen()
+            }
         }
     }
 
